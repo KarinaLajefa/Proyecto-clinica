@@ -1,3 +1,0 @@
-#ignorar los archivos de conexion de la base de datos
-config/conexion.php
-modulos_api/db.php
