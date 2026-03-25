@@ -7,7 +7,7 @@
                 <span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] uppercase font-bold tracking-wider rounded-md">+12%</span>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800">248</h3>
+                <h3 id="cardPacientes" class="text-3xl font-bold text-slate-800">0</h3>
                 <p class="text-sm text-slate-500 mt-1">Pacientes Activos</p>
             </div>
         </div>
@@ -18,7 +18,7 @@
                 <span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] uppercase font-bold tracking-wider rounded-md">+8%</span>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800">32</h3>
+                <h3 id="cardSesiones" class="text-3xl font-bold text-slate-800">0</h3>
                 <p class="text-sm text-slate-500 mt-1">Sesiones Hoy</p>
             </div>
         </div>
@@ -29,7 +29,7 @@
                 <span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] uppercase font-bold tracking-wider rounded-md">+23%</span>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800">$45,680</h3>
+                <h3 id="cardIngresos" class="text-3xl font-bold text-slate-800">$0</h3>
                 <p class="text-sm text-slate-500 mt-1">Ingresos del Mes</p>
             </div>
         </div>
@@ -40,7 +40,7 @@
                 <span class="px-2.5 py-1 bg-amber-50 text-amber-600 text-[10px] uppercase font-bold tracking-wider rounded-md">92%</span>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800">186</h3>
+                <h3 id="cardTratamientos" class="text-3xl font-bold text-slate-800">0</h3>
                 <p class="text-sm text-slate-500 mt-1">Tratamientos Completados</p>
             </div>
         </div>
@@ -143,4 +143,48 @@
         </div>
     </div>
 
-</div>
+<canvas id="grafica" class="mt-8"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const DASH_URL = '/Clinica_Fisio/modulos_api/dashboard.php';
+
+document.addEventListener('DOMContentLoaded', cargarDashboard);
+
+function cargarDashboard() {
+
+    fetch(DASH_URL)
+    .then(res => res.json())
+    .then(data => {
+
+        // 🔹 CARDS
+        document.getElementById('cardPacientes').textContent = data.pacientes;
+        document.getElementById('cardSesiones').textContent = data.sesiones;
+        document.getElementById('cardIngresos').textContent = "$" + data.ingresos;
+        document.getElementById('cardTratamientos').textContent = data.tratamientos;
+
+        // 🔹 GRAFICA
+        new Chart(document.getElementById('grafica'), {
+            type: 'bar',
+            data: {
+                labels: ['Pacientes', 'Sesiones', 'Ingresos', 'Tratamientos'],
+                datasets: [{
+                    label: 'Datos del sistema',
+                    data: [
+                        data.pacientes,
+                        data.sesiones,
+                        data.ingresos,
+                        data.tratamientos
+                    ]
+                }]
+            }
+        });
+
+    })
+    .catch(err => console.error("Error dashboard:", err));
+}
+
+</script>
+
