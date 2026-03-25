@@ -5,10 +5,15 @@ header("Content-Type: application/json");
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 
-// CASO 1: Si piden la lista de expedientes (GET)
+
 if ($metodo == 'GET') {
     try {
-        $sql = "SELECT * FROM expedientes ORDER BY id_paciente DESC";
+        //Traemos los datos de la tabla expedientes
+        $sql = "SELECT e.*, u.nombre, u.apellido_p, p.telefono FROM expedientes e
+                LEFT JOIN pacientes p ON e.id_paciente = p.id_paciente
+                LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+                ORDER BY e.id_expediente DESC";
+
         $stmt = $conn->query($sql);
         $expedientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -18,15 +23,14 @@ if ($metodo == 'GET') {
     }
 }
 
-// CASO 2: Si envían un nuevo expediente para guardar (POST)
 elseif ($metodo == 'POST') {
     $data = json_decode(file_get_contents("php://input"));
 
-    if (!empty($data->nombre_completo) && !empty($data->telefono)) {
+    if (!empty($data->id_paciente)) {
         try {
-            $sql = "INSERT INTO expedientes (nombre_completo, telefono, motivo) VALUES (?, ?, ?)";
+            $sql = "INSERT INTO expedientes (id_paciente, antecedentes, alergias, lesiones_previas, notas_generales) VALUES (?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->execute([$data->nombre_completo, $data->telefono, $data->motivo]);
+            $stmt->execute([$data->id_paciente, $data->antecedentes, $data->alergias, $data->lesiones_previas, $data->notas_generales]);
             
             echo json_encode(["status" => "success", "message" => "Expediente guardado correctamente."]);
         } catch (Exception $e) {

@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-require 'config/conexion.php';
+require '../modulos_api/db.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 

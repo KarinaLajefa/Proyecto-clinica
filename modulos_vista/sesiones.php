@@ -58,7 +58,7 @@
     document.addEventListener('DOMContentLoaded', cargarSesiones);
 
     function cargarSesiones() {
-        fetch('api/sesiones.php')
+        fetch('modulos_api/sesiones.php')
             .then(res => res.json())
             .then(res => {
                 if(res.status === 'success') {
@@ -90,7 +90,7 @@
             hora: document.getElementById('hora').value,
             observaciones: document.getElementById('observaciones').value
         };
-        fetch('api/sesiones.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+        fetch('modulos_api/sesiones.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
         .then(res => res.json()).then(res => {
             if(res.status === 'success') { document.getElementById('formSesion').reset(); cargarSesiones(); }
             else { alert('Error: ' + res.message); }
@@ -99,7 +99,7 @@
 
     function eliminarSesion(id) {
         if(confirm('¿Eliminar sesión?')) {
-            fetch('api/sesiones.php', { method: 'DELETE', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_sesion: id}) })
+            fetch('modulos_api/sesiones.php', { method: 'DELETE', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_sesion: id}) })
             .then(res => res.json()).then(() => cargarSesiones());
         }
     }
