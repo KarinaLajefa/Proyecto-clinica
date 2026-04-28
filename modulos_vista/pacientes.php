@@ -41,6 +41,16 @@
         </form>
     </div>
 
+    <div class="mb-4 flex items-center gap-4">
+    <div class="relative flex-1">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </span>
+        <input type="text" id="buscadorPaciente" onkeyup="filtrarPacientes()" placeholder="Buscar por nombre o teléfono..." 
+               class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#0891b2]">
+    </div>
+</div>
+
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
         <h3 class="text-lg font-bold text-slate-800 mb-6">Directorio de Pacientes</h3>
         <div class="overflow-x-auto">
@@ -216,6 +226,25 @@ function prepararEdicion(paciente) {
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Función para filtrar pacientes en la tabla sin recargar la página
+function filtrarPacientes() {
+    const input = document.getElementById("buscadorPaciente");
+    const filtro = input.value.toLowerCase();
+    const tabla = document.getElementById("tablaPacientes"); // ID de tu tbody
+    const filas = tabla.getElementsByTagName("tr");
+
+    for (let i = 0; i < filas.length; i++) {
+        const textoFila = filas[i].textContent.toLowerCase();
+        filas[i].style.display = textoFila.includes(filtro) ? "" : "none";
+    }
+}
+
+// Función para redirigir al expediente del paciente
+function verExpediente(idPaciente) {
+    // Redirige al módulo de expedientes pasando el ID del paciente por la URL
+    window.location.href = `index.php?modulo=expedientes&id=${idPaciente}`;
 }
 
 

@@ -3,12 +3,16 @@
         <h3 class="text-lg font-bold text-slate-800 mb-6">Programar Nueva Sesión</h3>
         <form id="formSesion" class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">ID Tratamiento</label>
-                <input type="number" id="id_tratamiento" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" placeholder="Ej. 1">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Paciente / Tratamiento</label>
+                <select id="id_tratamiento" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none cursor-pointer">
+                    <option value="">Cargando tratamientos...</option>
+                </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">ID Fisioterapeuta</label>
-                <input type="number" id="id_fisio" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" placeholder="Ej. 1">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Fisioterapeuta</label>
+                <select id="id_fisio" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none cursor-pointer">
+                    <option value="">Cargando personal...</option>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">Estado</label>
@@ -31,13 +35,25 @@
                 <input type="text" id="observaciones" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" placeholder="Opcional">
             </div>
             <div class="md:col-span-3 flex justify-end">
-                <button type="submit" class="px-6 py-2.5 bg-[#0891b2] hover:bg-[#0e7490] text-white text-sm font-semibold rounded-xl">Guardar Sesión</button>
+                <button type="submit" class="px-6 py-2.5 bg-[#0891b2] hover:bg-[#0e7490] text-white text-sm font-semibold rounded-xl transition-all">Guardar Sesión</button>
             </div>
         </form>
     </div>
 
+  <div class="relative w-full md:w-72">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </span>
+            <input type="text" id="buscarSesion" onkeyup="filtrarSesiones()" placeholder="Buscar paciente o terapia..." 
+                   class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#0891b2]">
+        </div>
+</div>
+
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
         <h3 class="text-lg font-bold text-slate-800 mb-6">Agenda de Sesiones</h3>
+
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead>
@@ -62,8 +78,9 @@
             .then(res => res.json())
             .then(res => {
                 if(res.status === 'success') {
+                    // 1. LLENAR TABLA DE AGENDA
                     let html = '';
-                    res.data.forEach(s => {
+                    res.data.agenda.forEach(s => {
                         let badgeClass = s.estado === 'Completada' ? 'bg-emerald-50 text-emerald-600' : (s.estado === 'Cancelada' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600');
                         html += `
                         <tr class="border-b border-slate-50 hover:bg-slate-50/50">
@@ -76,6 +93,20 @@
                         </tr>`;
                     });
                     document.getElementById('tablaSesiones').innerHTML = html;
+
+                    // 2. LLENAR SELECT DE TRATAMIENTOS (PACIENTES)
+                    const selectTrat = document.getElementById('id_tratamiento');
+                    selectTrat.innerHTML = '<option value="">Seleccione Paciente / Tratamiento</option>';
+                    res.data.catalogos.tratamientos.forEach(t => {
+                        selectTrat.innerHTML += `<option value="${t.id_tratamiento}">${t.nombre} ${t.apellido_p} - ${t.tipo_terapia}</option>`;
+                    });
+
+                    // 3. LLENAR SELECT DE FISIOTERAPEUTAS
+                    const selectFisio = document.getElementById('id_fisio');
+                    selectFisio.innerHTML = '<option value="">Seleccione Fisioterapeuta</option>';
+                    res.data.catalogos.fisioterapeutas.forEach(f => {
+                        selectFisio.innerHTML += `<option value="${f.id_fisio}">${f.nombre}</option>`;
+                    });
                 }
             });
     }
@@ -90,17 +121,54 @@
             hora: document.getElementById('hora').value,
             observaciones: document.getElementById('observaciones').value
         };
-        fetch('modulos_api/sesiones.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-        .then(res => res.json()).then(res => {
-            if(res.status === 'success') { document.getElementById('formSesion').reset(); cargarSesiones(); }
-            else { alert('Error: ' + res.message); }
+        
+        fetch('modulos_api/sesiones.php', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.status === 'success') { 
+                document.getElementById('formSesion').reset(); 
+                cargarSesiones(); 
+            } else { 
+                alert('Error: ' + res.message); 
+            }
         });
     });
 
     function eliminarSesion(id) {
-        if(confirm('¿Eliminar sesión?')) {
-            fetch('modulos_api/sesiones.php', { method: 'DELETE', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_sesion: id}) })
-            .then(res => res.json()).then(() => cargarSesiones());
+        if(confirm('¿Desea eliminar esta sesión programada?')) {
+            fetch('modulos_api/sesiones.php', { 
+                method: 'DELETE', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({id_sesion: id}) 
+            })
+            .then(res => res.json())
+            .then(() => cargarSesiones());
         }
     }
+
+    function filtrarSesiones() {
+    // 1. Obtener el texto del buscador
+    const input = document.getElementById("buscarSesion");
+    const filtro = input.value.toLowerCase();
+    
+    // 2. Obtener las filas de la tabla
+    const tabla = document.getElementById("tablaSesiones");
+    const filas = tabla.getElementsByTagName("tr");
+
+    // 3. Recorrer filas y ocultar las que no coincidan
+    for (let i = 0; i < filas.length; i++) {
+        // Obtenemos el contenido de la fila completa
+        const textoFila = filas[i].textContent.toLowerCase();
+        
+        if (textoFila.includes(filtro)) {
+            filas[i].style.display = ""; // Mostrar
+        } else {
+            filas[i].style.display = "none"; // Ocultar
+        }
+    }
+}
 </script>
