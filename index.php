@@ -24,7 +24,8 @@ if (!isset($_SESSION['id_usuario'])) {
 $permisos = [
     'supervisor'     => ['dashboard', 'pacientes', 'sesiones', 'pagos', 'expediente', 'configuracion'],
     'fisioterapeuta' => ['dashboard', 'pacientes', 'sesiones', 'expediente'],
-    'recepcionista'  => ['dashboard', 'pacientes', 'sesiones', 'pagos']
+    'recepcionista'  => ['dashboard', 'pacientes', 'sesiones', 'pagos'],
+    'paciente'       => ['dashboard', 'pacientes', 'sesiones' ]
 ];
 
 $rol_usuario = strtolower($_SESSION['rol'] ?? ''); 
