@@ -2,13 +2,40 @@
 session_start();
 
 // 1. PROTECCIÓN DE RUTA: Si no existe la sesión, mostramos la vista de login y detenemos todo.
+//if (!isset($_SESSION['id_usuario'])) {
+  //  require 'modulos_vista/login.php';
+   // exit;
+//}
+
+// 2. ENRUTADOR: Detectamos qué módulo quiere ver el usuario (por defecto 'dashboard')
+//$modulo = isset($_GET['modulo']) ? $_GET['modulo'] : 'dashboard';
+
+// 1. PROTECCIÓN DE RUTA
 if (!isset($_SESSION['id_usuario'])) {
     require 'modulos_vista/login.php';
     exit;
 }
+    if (!isset($_SESSION['id_usuario'])) {
+    require 'modulos_vista/login.php';
+    exit;
+}
 
-// 2. ENRUTADOR: Detectamos qué módulo quiere ver el usuario (por defecto 'dashboard')
-$modulo = isset($_GET['modulo']) ? $_GET['modulo'] : 'dashboard';
+// 1. Asegúrate de que los nombres aquí coincidan con tu tabla 'roles'
+$permisos = [
+    'supervisor'     => ['dashboard', 'pacientes', 'sesiones', 'pagos', 'expediente', 'configuracion'],
+    'fisioterapeuta' => ['dashboard', 'pacientes', 'sesiones', 'expediente'],
+    'recepcionista'  => ['dashboard', 'pacientes', 'sesiones', 'pagos']
+];
+
+$rol_usuario = strtolower($_SESSION['rol'] ?? ''); 
+$modulo = $_GET['modulo'] ?? 'dashboard';
+
+// Tu validación mejorada
+if (!isset($permisos[$rol_usuario]) || !in_array($modulo, $permisos[$rol_usuario])) {
+    $modulo = 'dashboard'; 
+    $error_permiso = true; 
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -28,27 +55,25 @@ $modulo = isset($_GET['modulo']) ? $_GET['modulo'] : 'dashboard';
             <span class="font-bold text-xl tracking-wide">FisioClínica</span>
         </div>
         
-        <nav class="flex-1 px-4 py-6 space-y-2">
-            <a href="index.php?modulo=dashboard" class="flex items-center gap-3 px-4 py-3 <?= $modulo == 'dashboard' ? 'bg-[#06b6d4] text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?> rounded-xl transition-colors">
-                🏠 <span class="font-medium text-sm">Dashboard</span>
-            </a>
-            <a href="index.php?modulo=pacientes" class="flex items-center gap-3 px-4 py-3 <?= $modulo == 'pacientes' ? 'bg-[#06b6d4] text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?> rounded-xl transition-colors">
-                👥 <span class="font-medium text-sm">Pacientes</span>
-            </a>
-            <a href="index.php?modulo=sesiones" class="flex items-center gap-3 px-4 py-3 <?= $modulo == 'sesiones' ? 'bg-[#06b6d4] text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?> rounded-xl transition-colors">
-                📅 <span class="font-medium text-sm">Sesiones</span>
-            </a>
-            <a href="index.php?modulo=pagos" class="flex items-center gap-3 px-4 py-3 <?= $modulo == 'pagos' ? 'bg-[#06b6d4] text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?> rounded-xl transition-colors">
-                💳 <span class="font-medium text-sm">Pagos</span>
-            </a>
-             <a href="index.php?modulo=expediente" class="flex items-center gap-3 px-4 py-3 <?= $modulo == 'expedientes' ? 'bg-[#06b6d4] text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?> rounded-xl transition-colors">
-                 👥<span class="font-medium text-sm">Expedientes</span>
-            </a>
-             <a href="index.php?modulo=configuracion" class="flex items-center gap-3 px-4 py-3 <?= $modulo == 'configuracion' ? 'bg-[#06b6d4] text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?> rounded-xl transition-colors">
-                 <span class="font-medium text-sm">Configuracion</span>
-            </a>
-        </nav>
+       <nav class="flex-1 px-4 py-6 space-y-2">
+    <a href="index.php?modulo=dashboard" class="flex ..."> 🏠 Dashboard </a>
 
+    <a href="index.php?modulo=pacientes" class="flex ..."> 👥 Pacientes </a>
+
+    <a href="index.php?modulo=sesiones" class="flex ..."> 📅 Sesiones </a>
+
+    <?php if (in_array('pagos', $permisos[$rol_usuario])): ?>
+        <a href="index.php?modulo=pagos" class="flex ..."> 💳 Pagos </a>
+    <?php endif; ?>
+
+    <?php if (in_array('expediente', $permisos[$rol_usuario])): ?>
+        <a href="index.php?modulo=expediente" class="flex ..."> 📂 Expedientes </a>
+    <?php endif; ?>
+
+    <?php if (in_array('configuracion', $permisos[$rol_usuario])): ?>
+        <a href="index.php?modulo=configuracion" class="flex ..."> ⚙️ Configuración </a>
+    <?php endif; ?>
+</nav>
         <div class="p-4">
             <a href="logout.php" class="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-colors">
                 🚪 <span class="font-medium text-sm">Cerrar Sesión</span>

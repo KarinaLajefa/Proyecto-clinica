@@ -38,6 +38,22 @@
 <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white">
     <h2 class="text-xl font-bold mb-4 text-cyan-400">Historial de Expedientes</h2>
     <div class="overflow-x-auto">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h3 class="text-lg font-bold text-slate-800">Buscar Expediente Clínico</h3>
+        
+        <div class="relative w-full md:w-96">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </span>
+            <input type="text" id="buscarExpediente" onkeyup="filtrarExpedientes()" 
+                   placeholder="Escriba nombre o apellido del paciente..." 
+                   class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#0891b2] transition-all">
+        </div>
+    </div>
+</div>
     <table class="w-full text-left">
             <thead>
                 <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase">
@@ -121,4 +137,27 @@
 
     // Cargar los expedientes apenas cargue la página
     cargarExpedientes();
+
+
+    function filtrarExpedientes() {
+    // 1. Obtener el valor del buscador en minúsculas
+    const input = document.getElementById("buscarExpediente");
+    const filtro = input.value.toLowerCase();
+    
+    // 2. Apuntar al cuerpo de la tabla de expedientes
+    const tabla = document.getElementById("tablaExpedientes"); // Asegúrate que tu tbody tenga este ID
+    const filas = tabla.getElementsByTagName("tr");
+
+    // 3. Recorrer y filtrar
+    for (let i = 0; i < filas.length; i++) {
+        const textoFila = filas[i].textContent.toLowerCase();
+        
+        // Si el nombre o apellido coinciden, se muestra; si no, se oculta
+        if (textoFila.includes(filtro)) {
+            filas[i].style.display = ""; 
+        } else {
+            filas[i].style.display = "none";
+        }
+    }
+}
 </script>
