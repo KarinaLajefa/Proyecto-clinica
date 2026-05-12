@@ -83,43 +83,54 @@
 
     document.addEventListener('DOMContentLoaded', cargarPacientes);
 
-    function cargarPacientes() {
-        fetch(API_URL) // 
-            .then(res => res.json())
-            .then(respuesta => {
-                if(respuesta.status === 'success') {
-                     listaPacientes = respuesta.data;
-                    let html = '';
-                    respuesta.data.forEach(paciente => {
-                        let inicial = paciente.nombre.charAt(0).toUpperCase();
-                        let nombreCompleto = `${paciente.nombre} ${paciente.apellido_p} ${paciente.apellido_m}`;
-                        
-                        html += `
-                        <tr class="border-b border-slate-50 hover:bg-slate-50/50">
-                            <td class="py-4 flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">${inicial}</div>
-                                <span class="font-semibold text-slate-800">${nombreCompleto}</span>
-                            </td>
-                            <td class="py-4 text-slate-600">${paciente.telefono || 'N/A'}</td>
-                            <td class="py-4 text-slate-600">${paciente.alergias || 'Ninguna'}</td>
-                           <td class="py-4 text-right">
-                               <button onclick='prepararEdicion(${JSON.stringify(paciente)})' 
-                                        class="text-cyan-600 hover:text-cyan-800 font-medium text-sm">
+   function cargarPacientes() {
+    fetch(API_URL) 
+        .then(res => res.json())
+        .then(respuesta => {
+            if(respuesta.status === 'success') {
+                listaPacientes = respuesta.data;
+                let html = '';
+                respuesta.data.forEach(paciente => {
+                    let inicial = paciente.nombre.charAt(0).toUpperCase();
+                    let nombreCompleto = `${paciente.nombre} ${paciente.apellido_p} ${paciente.apellido_m || ''}`;
+                    
+                    html += `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-4 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">${inicial}</div>
+                            <span class="font-semibold text-slate-800">${nombreCompleto}</span>
+                        </td>
+                        <td class="py-4 text-slate-600">${paciente.telefono || 'N/A'}</td>
+                        <td class="py-4 text-slate-600">${paciente.alergias || 'Ninguna'}</td>
+                        <td class="py-4 text-right">
+                            <div class="flex items-center justify-end gap-4">
+                                <a href="modulos_api/imprimir_pdf.php?id=${paciente.id_paciente}" 
+                                   target="_blank" 
+                                   class="text-cyan-600 hover:text-cyan-700 font-bold text-xs flex items-center gap-1 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Expediente
+                                </a>
+
+                                <button onclick='prepararEdicion(${JSON.stringify(paciente)})' 
+                                        class="text-slate-400 hover:text-cyan-600 font-medium text-sm transition">
                                     Editar
                                 </button>
                                 
                                 <button onclick="eliminarPaciente(${paciente.id_paciente})" 
-                                        class="text-red-500 hover:text-red-700 font-medium text-sm ml-3">
+                                        class="text-slate-400 hover:text-red-500 font-medium text-sm transition">
                                     Eliminar
                                 </button>
-                            </td>
-                        </tr>`;
-                    });
-                    tablaPacientes.innerHTML = html;
-                }
-            })
-            .catch(err => console.error("Error al cargar:", err));
-    }
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                tablaPacientes.innerHTML = html;
+            }
+        })
+        .catch(err => console.error("Error al cargar:", err));
+}
 
     formPaciente.addEventListener('submit', function(e) {
     e.preventDefault(); 
