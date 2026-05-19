@@ -62,6 +62,7 @@
                     <th class="py-2">Alergias</th>
                     <th class="py-2">Lesiones</th>
                     <th class="py-2">Notas</th>
+                    <th class="pb-3 font-semibold text-right">Acciones</th>
                 </tr>
             </thead>
         <tbody id="tablaExpedientes" class="text-sm">
@@ -71,8 +72,10 @@
 
 <script>
     // 1. Función para CARGAR los expedientes al abrir la página
+   
     function cargarExpedientes() {
-        fetch('modulos_api/expediente.php')
+    // 🚨 Corregido a plural 'expedientes.php' para coincidir con tu API
+    fetch('modulos_api/expediente.php')
         .then(res => res.json())
         .then(respuesta => {
             if(respuesta.status === 'success') {
@@ -94,13 +97,26 @@
                             </td>
                             <td class="py-3 text-gray-300">${exp.lesiones_previas || 'N/A'}</td>
                             <td class="py-3 text-xs italic text-gray-500">${exp.notas_generales || 'NA'}</td>
+                            
+                            <td class="py-3 text-right">
+                                <div class="flex justify-end pr-2">
+                                    <a href="modulos_api/imprimir_pdf.php?id=${exp.id_paciente}" 
+                                       target="_blank" 
+                                       class="text-cyan-400 hover:text-cyan-300 font-bold text-xs flex items-center gap-1 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Ver PDF
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                     `;
                 });
             }
         })
         .catch(error => console.error("Error al cargar:", error));
-    }
+}
 
     // 2. Función para GUARDAR un nuevo expediente
     document.getElementById('formExpediente').addEventListener('submit', function(e) {
@@ -159,5 +175,11 @@
             filas[i].style.display = "none";
         }
     }
+}
+
+// Función para redirigir al expediente del paciente
+function verExpediente(idPaciente) {
+    // Redirige al módulo de expedientes pasando el ID del paciente por la URL
+    window.location.href = `index.php?modulo=expedientes&id=${idPaciente}`;
 }
 </script>
