@@ -46,7 +46,7 @@
         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </span>
-        <input type="text" id="buscadorPaciente" onkeyup="filtrarPacientes()" placeholder="Buscar por nombre o teléfono..." 
+        <input type="text" id="buscadorPaciente" onkeyup="filtrarPacientes()" placeholder="Buscar por ID, nombre o teléfono..." 
                class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#0891b2]">
     </div>
 </div>
@@ -57,6 +57,7 @@
             <table class="w-full text-left text-sm">
                 <thead>
                     <tr class="text-slate-400 border-b border-slate-100 uppercase text-xs tracking-wider">
+                        <th class="pb-3 font-semibold">Id</th>
                         <th class="pb-3 font-semibold">Paciente</th>
                         <th class="pb-3 font-semibold">Contacto</th>
                         <th class="pb-3 font-semibold">Alergias</th>
@@ -93,9 +94,12 @@
                 respuesta.data.forEach(paciente => {
                     let inicial = paciente.nombre.charAt(0).toUpperCase();
                     let nombreCompleto = `${paciente.nombre} ${paciente.apellido_p} ${paciente.apellido_m || ''}`;
-                    
+                    let idFormateado = String(paciente.id_paciente).padStart(4, '0');
+
                     html += `
                     <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-4 font-mono text-slate-400 font-bold text-sm">#${idFormateado}</td>
+
                         <td class="py-4 flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">${inicial}</div>
                             <span class="font-semibold text-slate-800">${nombreCompleto}</span>
@@ -107,7 +111,7 @@
                                 <a href="modulos_api/imprimir_pdf.php?id=${paciente.id_paciente}" 
                                    target="_blank" 
                                    class="text-cyan-600 hover:text-cyan-700 font-bold text-xs flex items-center gap-1 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     Expediente
@@ -242,13 +246,18 @@ function prepararEdicion(paciente) {
 // Función para filtrar pacientes en la tabla sin recargar la página
 function filtrarPacientes() {
     const input = document.getElementById("buscadorPaciente");
-    const filtro = input.value.toLowerCase();
-    const tabla = document.getElementById("tablaPacientes"); // ID de tu tbody
+    const filtro = input.value.toLowerCase().replace('#', ''); // Limpia el '#' por si lo escriben
+    const tabla = document.getElementById("tablaPacientes"); // Tu tbody
     const filas = tabla.getElementsByTagName("tr");
 
     for (let i = 0; i < filas.length; i++) {
-        const textoFila = filas[i].textContent.toLowerCase();
-        filas[i].style.display = textoFila.includes(filtro) ? "" : "none";
+        // Obtenemos la primera celda <td> (donde pusimos el ID)
+        const celdaId = filas[i].getElementsByTagName("td")[0];
+        
+        if (celdaId) {
+            const textoId = celdaId.textContent.toLowerCase();
+            filas[i].style.display = textoId.includes(filtro) ? "" : "none";
+        }
     }
 }
 
