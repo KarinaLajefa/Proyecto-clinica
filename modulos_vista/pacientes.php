@@ -60,7 +60,7 @@
                         <th class="pb-3 font-semibold">Id</th>
                         <th class="pb-3 font-semibold">Paciente</th>
                         <th class="pb-3 font-semibold">Contacto</th>
-                        <th class="pb-3 font-semibold">Alergias</th>
+                        <th class="pb-3 font-semibold">Alergias y lesiones</th>
                         <th class="pb-3 font-semibold text-right">Acciones</th>
                     </tr>
                 </thead>
