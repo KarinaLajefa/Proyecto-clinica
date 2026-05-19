@@ -1,31 +1,43 @@
 <?php
 require 'db.php';
-$id = $_GET['id'] ?? 0;
+//$id = $_GET['id'] ?? 0;
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-$sql = "SELECT p.*, u.nombre, u.apellido_p, u.apellido_m 
-        FROM pacientes p 
-        INNER JOIN usuarios u ON p.id_usuario = u.id_usuario 
-        WHERE p.id_paciente = ?";
+try {
+    // 1️⃣ CONSULTA PDO: Cruzamos usuarios, pacientes y el historial médico de expedientes
+    $sql = "SELECT p.*, u.nombre, u.apellido_p, u.apellido_m, 
+                   e.alergias, e.lesiones_previas, e.antecedentes, e.notas_generales
+            FROM pacientes p 
+            INNER JOIN usuarios u ON p.id_usuario = u.id_usuario 
+            LEFT JOIN expedientes e ON p.id_paciente = e.id_paciente
+            WHERE p.id_paciente = ?";
 
-$stmt = $conn->prepare($sql);
-$stmt->execute([$id]);
-$p = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Sintaxis pura de PDO (Se eliminó bind_param y pasamos el ID directamente en el execute)
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$id]);
+    $p = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$p) die("Paciente no encontrado");
+    if (!$p) {
+        die("Paciente no encontrado");
+    }
+
+} catch (PDOException $e) {
+    die("Error en la base de datos: " . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Expediente_<?= $p['nombre'] ?></title>
+    <title>Expediente_<?= htmlspecialchars($p['nombre']) ?></title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         @media print {
             .no-print { display: none !important; }
             body { background: white !important; padding: 0 !important; }
-            .print-shadow { shadow: none !important; border: 1px solid #e2e8f0 !important; }
+            .print-shadow { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
         }
     </style>
 </head>
@@ -62,41 +74,73 @@ if (!$p) die("Paciente no encontrado");
                     <?= strtoupper($p['nombre'][0]) ?>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800"><?= $p['nombre'] . " " . $p['apellido_p'] . " " . $p['apellido_m'] ?></h2>
+                    <h2 class="text-2xl font-bold text-slate-800"><?= htmlspecialchars($p['nombre'] . " " . $p['apellido_p'] . " " . $p['apellido_m']) ?></h2>
                     <p class="text-slate-500 font-medium italic">Paciente Registrado</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-x-12 gap-y-8">
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-1">Información de Contacto</h3>
-                        <p class="text-slate-700 font-semibold border-l-4 border-cyan-100 pl-3">
-                            <?= $p['telefono'] ?: 'No disponible' ?>
-                        </p>
-                    </div>
-                    <div>
-                        <h3 class="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-1">Fecha de Nacimiento</h3>
-                        <p class="text-slate-700 font-semibold border-l-4 border-cyan-100 pl-3">
-                            <?= $p['fecha_nacimiento'] ?: 'N/A' ?>
-                        </p>
-                    </div>
+            <div class="grid grid-cols-3 gap-x-6 gap-y-8">
+                <div>
+                    <h3 class="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-1">Información de Contacto</h3>
+                    <p class="text-slate-700 font-semibold border-l-4 border-cyan-100 pl-3">
+                        <?= htmlspecialchars($p['telefono'] ?: 'No disponible') ?>
+                    </p>
                 </div>
-
-                    <div>
-                        <h3 class="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-1">Género</h3>
-                        <p class="text-slate-700 font-semibold border-l-4 border-cyan-100 pl-3">
-                            <?= $p['genero'] ?: 'No especificado' ?>
-                        </p>
-                    </div>
+                <div>
+                    <h3 class="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-1">Fecha de Nacimiento</h3>
+                    <p class="text-slate-700 font-semibold border-l-4 border-cyan-100 pl-3">
+                        <?= htmlspecialchars($p['fecha_nacimiento'] ?: 'N/A') ?>
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-[10px] font-black text-cyan-600 uppercase tracking-widest mb-1">Género</h3>
+                    <p class="text-slate-700 font-semibold border-l-4 border-cyan-100 pl-3">
+                        <?= htmlspecialchars($p['genero'] ?: 'No especificado') ?>
+                    </p>
                 </div>
             </div>
 
-            <div class="mt-10 bg-slate-50 p-6 rounded-2xl">
-                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Dirección Registrada</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">
-                    <?= $p['direccion'] ?: 'Sin domicilio registrado en el sistema.' ?>
+            <div class="mt-8 bg-slate-50 p-4 rounded-2xl">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Dirección Registrada</h3>
+                <p class="text-slate-600 text-sm">
+                    <?= htmlspecialchars($p['direccion'] ?: 'Sin domicilio registrado en el sistema.') ?>
                 </p>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-slate-100">
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <span class="w-2.5 h-5 bg-cyan-600 rounded-full"></span>
+                    Historial Clínico de Fisioterapia
+                </h2>
+                
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="bg-red-50/40 border border-red-100 p-5 rounded-2xl">
+                        <h3 class="text-xs font-black text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            ⚠️ Alergias Reportadas
+                        </h3>
+                        <p class="text-slate-700 text-sm font-medium leading-relaxed">
+                            <?= nl2br(htmlspecialchars($p['alergias'] ?: 'El paciente no refiere alergias conocidas.')) ?>
+                        </p>
+                    </div>
+
+                    <div class="bg-cyan-50/30 border border-cyan-100 p-5 rounded-2xl">
+                        <h3 class="text-xs font-black text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            📋 Descripción de Lesiones / Diagnóstico
+                        </h3>
+                        <p class="text-slate-700 text-sm leading-relaxed">
+                            <?= nl2br(htmlspecialchars($p['lesiones_previas'] ?: 'Sin lesiones previas o motivos de consulta registrados.')) ?>
+                        </p>
+                    </div>
+                </div>
+
+                <?php if (!empty($p['notas_generales'])): ?>
+                <div class="mt-6 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Notas y Observaciones Generales</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed italic">
+                        "<?= nl2br(htmlspecialchars($p['notas_generales'])) ?>"
+                    </p>
+                </div>
+                <?php endif; ?>
             </div>
 
             <div class="mt-16 pt-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
